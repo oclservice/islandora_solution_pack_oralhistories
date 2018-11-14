@@ -167,25 +167,28 @@ function islandora_oralhistories_transcripts_ui_transcript($ui) {
   if (isset($json['response']['docs'][0])) {
     $doc = $json['response']['docs'][0] ? $json['response']['docs'][0] : NULL;
     $counter = isset($doc['or_cue_id']) ? count($doc['or_cue_id']) : 0;
-
+     
     for ($i = 0; $i < $counter; $i++) {
-      $tcus[$i] = new stdClass();
-      $tcus[$i]->trid = str_replace(':', '-', $doc['PID']);
-      $tcus[$i]->id = $doc['or_cue_id'][$i];
-      $tcus[$i]->start = (float) $doc['or_start'][$i];
-      $tcus[$i]->end = (float) $doc['or_end'][$i];
+	// First, test if the cue contains a timestamp. Empty cues are ignored.       
+	if(isset($doc['or_start'][$i])) {
+		$tcus[$i] = new stdClass();
+      		$tcus[$i]->trid = str_replace(':', '-', $doc['PID']);
+      		$tcus[$i]->id = $doc['or_cue_id'][$i];
+      		$tcus[$i]->start = (float) $doc['or_start'][$i];
+      		$tcus[$i]->end = (float) $doc['or_end'][$i];
 
-      // Muti tiers and speakernames are parsed.
-      foreach ($tiers as $t) {
-        if (isset($doc[$t])) {
-          $tcus[$i]->$t = $doc[$t][$i];
-        }
-      }
-      foreach ($speaker as $s) {
-        if (isset($doc[$s])) {
-          $tcus[$i]->$s = $doc[$s][$i];
-        }
-      }
+      		// Muti tiers and speakernames are parsed.
+      		foreach ($tiers as $t) {
+        		if (isset($doc[$t])) {
+          			$tcus[$i]->$t = $doc[$t][$i];
+        		}
+      		}
+      		foreach ($speaker as $s) {
+        		if (isset($doc[$s])) {
+          			$tcus[$i]->$s = $doc[$s][$i];
+        		}
+      		}
+	}
     }
   } else {
     watchdog('Islandora Oralhistories', "Solr query for '$query' in " . __FUNCTION__ . " (file " . __FILE__ . ") returned no results. ", $variables = array(), $severity = WATCHDOG_WARNING, $link = NULL);
